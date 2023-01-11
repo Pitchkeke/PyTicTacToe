@@ -9,12 +9,11 @@ class TicTacToe(tk.Tk) :
 		self.playerTurn = 0
 		self.gridCellSize = int(self.canva.cget("height"))/3
 		self.nbFreeCell = nbCell*nbCell
-		self.finish = False
+
+		self.keyPlay = "<Button-1>"
 
 		self.bind("<Escape>", self.stop)
-
-		if (self.nbFreeCell > 0 and not self.finish) :
-			self.canva.bind("<Button-1>", self.addValueGrid)
+		self.canva.bind(self.keyPlay, self.play)
 
 	def initVisu(self, size) :
 		self.canva = tk.Canvas(self, bg = "red", height = size, width = size)
@@ -48,7 +47,6 @@ class TicTacToe(tk.Tk) :
 				self.grid[i].append(-1)
 				
 	def addValueGrid(self, clic) :
-		print("test")
 		(x, y) = self.posGridClic(clic)
 
 		if (self.grid[x][y] == -1) :
@@ -60,12 +58,6 @@ class TicTacToe(tk.Tk) :
 			self.grid[x][y] = self.playerTurn
 
 			self.nbFreeCell -= 1
-
-			if not self.checkIfWin(self.playerTurn) :
-
-				self.playerTurn = (self.playerTurn+1)%2
-			else :
-				self.finish = True
 			
 
 	def posGridClic(self, clic) :
@@ -74,17 +66,31 @@ class TicTacToe(tk.Tk) :
 
 		return (x, y)
 
-	def checkIfWin(self, lastInsert) :
-		if (self.grid[0][0] == lastInsert and self.grid[0][1] == lastInsert and self.grid[0][2] == lastInsert) or \
-			(self.grid[1][0] == lastInsert and self.grid[1][1] == lastInsert and self.grid[1][2] == lastInsert) or \
-			(self.grid[2][0] == lastInsert and self.grid[2][1] == lastInsert and self.grid[2][2] == lastInsert) or \
-			(self.grid[0][0] == lastInsert and self.grid[1][0] == lastInsert and self.grid[2][0] == lastInsert) or \
-			(self.grid[0][1] == lastInsert and self.grid[1][1] == lastInsert and self.grid[2][1] == lastInsert) or \
-			(self.grid[0][2] == lastInsert and self.grid[1][2] == lastInsert and self.grid[2][2] == lastInsert) or \
-			(self.grid[0][0] == lastInsert and self.grid[1][1] == lastInsert and self.grid[2][2] == lastInsert) or \
-			(self.grid[0][2] == lastInsert and self.grid[1][1] == lastInsert and self.grid[2][0] == lastInsert) :
-			return True
-		return False
+	def checkIfWin(self) :
+		return (self.grid[0][0] == self.playerTurn and self.grid[0][1] == self.playerTurn and self.grid[0][2] == self.playerTurn) or \
+			(self.grid[1][0] == self.playerTurn and self.grid[1][1] == self.playerTurn and self.grid[1][2] == self.playerTurn) or \
+			(self.grid[2][0] == self.playerTurn and self.grid[2][1] == self.playerTurn and self.grid[2][2] == self.playerTurn) or \
+			(self.grid[0][0] == self.playerTurn and self.grid[1][0] == self.playerTurn and self.grid[2][0] == self.playerTurn) or \
+			(self.grid[0][1] == self.playerTurn and self.grid[1][1] == self.playerTurn and self.grid[2][1] == self.playerTurn) or \
+			(self.grid[0][2] == self.playerTurn and self.grid[1][2] == self.playerTurn and self.grid[2][2] == self.playerTurn) or \
+			(self.grid[0][0] == self.playerTurn and self.grid[1][1] == self.playerTurn and self.grid[2][2] == self.playerTurn) or \
+			(self.grid[0][2] == self.playerTurn and self.grid[1][1] == self.playerTurn and self.grid[2][0] == self.playerTurn)
+
+
+	def isFinish(self) :
+		return self.checkIfWin() or self.nbFreeCell <= 0
+
+	def play(self, event) :
+		self.addValueGrid(event)
+
+		if not self.isFinish() :
+			self.playerTurn = (self.playerTurn+1)%2
+		else :
+			self.canva.unbind(self.keyPlay)
+			if (self.checkIfWin()) :
+				print("Joueur : ", self.playerTurn, " a gagné !")
+			else :
+				print("Egalité !")
 
 
 	def stop(self, escape) :
