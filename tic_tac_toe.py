@@ -1,19 +1,25 @@
 import tkinter as tk
+import time
+import random
 
 class TicTacToe(tk.Tk) :
 	def __init__(self, size, nbCell) :
 		tk.Tk.__init__(self)
 		self.initVisu(size)
-		self.initGrid(nbCell)
 
-		self.playerTurn = 0
-		self.gridCellSize = int(self.canva.cget("height"))/3
+		self.gridCellSize = int(self.canva.cget("height"))/nbCell
 		self.nbFreeCell = nbCell*nbCell
+		self.nbCell = nbCell
 
-		self.keyPlay = "<Button-1>"
+		self.initGrid()
+
+		self.player1Value = 0
+		self.player2Value = 1
+		self.playerTurn = self.player1Value
+		self.isIaSecondPlayer = True
 
 		self.bind("<Escape>", self.stop)
-		self.canva.bind(self.keyPlay, self.play)
+		self.canva.bind("<Button-1>", self.play)
 
 	def initVisu(self, size) :
 		self.canva = tk.Canvas(self, bg = "red", height = size, width = size)
@@ -39,11 +45,11 @@ class TicTacToe(tk.Tk) :
 		self.canva.create_oval(x+self.gridCellSize/6, y+self.gridCellSize/6, x+5*self.gridCellSize/6, y+5*self.gridCellSize/6)
 		self.canva.create_oval(x+5*self.gridCellSize/6, y+self.gridCellSize/6, x+self.gridCellSize/6, y+5*self.gridCellSize/6)
 
-	def initGrid(self, nbCell) :
+	def initGrid(self,) :
 		self.grid = []
-		for i in range(nbCell) :
+		for i in range(self.nbCell) :
 			self.grid.append([])
-			for j in range(nbCell) :
+			for j in range(self.nbCell) :
 				self.grid[i].append(-1)
 				
 	def addValueGrid(self, clic) :
@@ -58,6 +64,9 @@ class TicTacToe(tk.Tk) :
 			self.grid[x][y] = self.playerTurn
 
 			self.nbFreeCell -= 1
+
+			return True
+		return False
 			
 
 	def posGridClic(self, clic) :
@@ -81,17 +90,34 @@ class TicTacToe(tk.Tk) :
 		return self.checkIfWin() or self.nbFreeCell <= 0
 
 	def play(self, event) :
-		self.addValueGrid(event)
+		if (self.addValueGrid(event)) :
 
-		if not self.isFinish() :
-			self.playerTurn = (self.playerTurn+1)%2
-		else :
-			self.canva.unbind(self.keyPlay)
-			if (self.checkIfWin()) :
-				print("Joueur : ", self.playerTurn, " a gagné !")
+			if not self.isFinish() :
+				self.playerTurn = (self.playerTurn+1)%2
+
+				if (self.isIaSecondPlayer and self.playerTurn == self.player2Value) :
+					(event.x, event.y) = self.iaPosition()
+					(event.x, event.y) = (event.x*self.gridCellSize + self.gridCellSize/2, event.y*self.gridCellSize + self.gridCellSize/2)
+
+					self.play(event)
 			else :
-				print("Egalité !")
+				self.canva.unbind("<Button-1>")
+				if (self.checkIfWin()) :
+					print("Joueur : ", self.playerTurn, " a gagné !")
+				else :
+					print("Egalité !")
+	
+	def iaPosition(self) :
+		return self.iaRandomPosition()
+	
+	def iaRandomPosition(self) :
+		while (self.nbFreeCell > 0) :
+			(x, y) = (random.randint(0, self.nbCell-1), random.randint(0, self.nbCell-1))
 
+			if (self.grid[x][y] == -1) :
+				break
+		
+		return (x, y)
 
 	def stop(self, escape) :
 		self.quit()
